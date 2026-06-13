@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Analisador de Contratos — Mercado Eletrônico</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+
+  <!-- ── LOGIN ── -->
+  <div id="view-login" class="login-wrap">
+    <div class="login-card">
+      <div class="logo-eyebrow">Mercado Eletrônico</div>
+      <div class="login-title">Analisador de Contratos</div>
+      <p class="login-sub">Acesse com seu e-mail corporativo</p>
+      <label>E-mail <input id="login-email" type="email" autocomplete="username" /></label>
+      <label>Senha <input id="login-password" type="password" autocomplete="current-password" /></label>
+      <button id="btn-login" class="btn-primary">Entrar</button>
+      <p id="login-error" class="error"></p>
+    </div>
+  </div>
+
+  <!-- ── APP ── -->
+  <div id="app-shell" class="hidden">
+    <nav class="sidebar">
+      <div class="sidebar-logo">
+        <div class="logo-eyebrow">Mercado Eletrônico</div>
+        <div class="logo-name">Analisador de<br>Contratos</div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-group-label">Menu</div>
+        <a class="nav-item active" data-page="nova"><span class="nav-icon">📄</span> Nova Análise</a>
+        <a class="nav-item" data-page="relatorios"><span class="nav-icon">📋</span> Relatórios
+          <span class="nav-badge hidden" id="badge-relatorios">0</span></a>
+        <a class="nav-item" data-page="aprendizados"><span class="nav-icon">📚</span> Aprendizados</a>
+        <a class="nav-item" data-page="config"><span class="nav-icon">⚙️</span> Configurações</a>
+      </div>
+      <div class="sidebar-footer">
+        <div class="user-row">
+          <div class="user-avatar" id="user-avatar">··</div>
+          <div class="user-info">
+            <div class="user-name" id="user-name">—</div>
+            <div class="user-role" id="user-role">—</div>
+          </div>
+          <button class="btn-logout" id="btn-logout" title="Sair">⏻</button>
+        </div>
+      </div>
+    </nav>
+
+    <main class="main">
+
+      <!-- PAGE: NOVA ANÁLISE -->
+      <div id="page-nova">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Nova Análise</div>
+            <div class="page-subtitle">Envie o contrato do cliente para análise automática contra o padrão ME</div>
+          </div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-value" id="stat-total">—</div>
+            <div class="stat-label">Contratos analisados</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="stat-criticos">—</div>
+            <div class="stat-label">Riscos altos identificados</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="stat-aprendizados">—</div>
+            <div class="stat-label">Aprendizados registrados</div>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div>
+            <div class="card">
+              <div class="card-title">📁 Tipo de contrato</div>
+              <div class="type-grid" id="type-grid"></div>
+
+              <div class="card-title">📎 Contrato do cliente</div>
+              <div class="upload-zone" id="uploadZone">
+                <div class="upload-zone-icon">📂</div>
+                <h3>Arraste o arquivo aqui ou clique para selecionar</h3>
+                <p>Será analisado contra a Base de Conhecimento do tipo selecionado</p>
+                <div class="format-tags">
+                  <span class="fmt-tag">PDF</span>
+                  <span class="fmt-tag">DOCX</span>
+                </div>
+              </div>
+              <div class="file-selected" id="fileSelected">
+                <div class="file-thumb">📄</div>
+                <div class="file-meta">
+                  <div class="file-name-text" id="fileNameText">—</div>
+                  <div class="file-size-text" id="fileSizeText">—</div>
+                </div>
+                <div class="file-remove" id="fileRemove" title="Remover">✕</div>
+              </div>
+              <input type="file" id="fileInput" accept=".pdf,.docx" />
+
+              <div class="progress-wrap" id="progressWrap">
+                <div class="progress-label" id="progressLabel">Processando…</div>
+                <div class="progress-bar-bg"><div class="progress-bar-fill" id="progressFill"></div></div>
+              </div>
+
+              <button class="btn-analyze" id="analyzeBtn" disabled>🔍 Analisar contrato</button>
+            </div>
+
+            <!-- RESULT -->
+            <div class="result-panel" id="resultPanel">
+              <div class="result-header">
+                <div class="result-title" id="resultTitle">Análise</div>
+                <div class="result-date" id="resultDate">—</div>
+              </div>
+              <div class="severity-bar">
+                <div class="sev-item"><div class="sev-dot sev-red"></div> <span id="cnt-alta">0</span> altos</div>
+                <div class="sev-item"><div class="sev-dot sev-orange"></div> <span id="cnt-media">0</span> médios</div>
+                <div class="sev-item"><div class="sev-dot sev-green"></div> <span id="cnt-baixa">0</span> baixos</div>
+              </div>
+              <div class="result-metrics" id="resultMetrics"></div>
+              <div class="result-body" id="resultBody"></div>
+              <div class="result-footer">
+                <button class="btn-outline" id="btn-download">⬇️ Baixar relatório (DOCX)</button>
+                <button class="btn-outline" id="btn-nova">🔄 Nova análise</button>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="card side-card">
+              <div class="card-title">✅ O que será analisado</div>
+              <ul class="checklist" id="checklist-analise"><li>Selecione um tipo…</li></ul>
+            </div>
+            <div class="card side-card">
+              <div class="card-title">📖 Aprendizados ativos</div>
+              <ul class="checklist" id="checklist-aprendizados"><li>—</li></ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-header">
+          <div class="section-title">Análises recentes</div>
+          <a class="view-all-link" data-page="relatorios">Ver todas →</a>
+        </div>
+        <div class="reports-list" id="recent-list"></div>
+      </div>
+
+      <!-- PAGE: RELATÓRIOS -->
+      <div id="page-relatorios" class="hidden">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Relatórios</div>
+            <div class="page-subtitle">Histórico de análises realizadas</div>
+          </div>
+        </div>
+        <div class="card"><div class="reports-list" id="all-list"></div></div>
+      </div>
+
+      <!-- PAGE: APRENDIZADOS (Base de Conhecimento) -->
+      <div id="page-aprendizados" class="hidden">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Aprendizados</div>
+            <div class="page-subtitle">Base de conhecimento que refina as análises (cláusulas-padrão, limites, flexibilidades)</div>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="card">
+            <div class="field">
+              <label>Tipo de contrato</label>
+              <select id="apr-tipo"></select>
+            </div>
+            <p class="msg" id="apr-info"></p>
+            <div id="regras-list"></div>
+          </div>
+
+          <div>
+            <div class="card side-card curador-only">
+              <div class="card-title" id="regra-form-title">➕ Adicionar regra</div>
+              <div class="field"><label>Tópico</label><input id="r-topico" placeholder="ex.: Reajuste" /></div>
+              <div class="field"><label>Texto padrão</label><textarea id="r-texto" rows="2"></textarea></div>
+              <div class="field"><label>Limites (um por linha)</label><textarea id="r-limites" rows="2" placeholder="reajuste anual ≤ IPCA"></textarea></div>
+              <div class="field"><label>Flexibilidades (um por linha)</label><textarea id="r-flex" rows="2"></textarea></div>
+              <div class="field"><label>Correções/notas (uma por linha)</label><textarea id="r-correcoes" rows="2"></textarea></div>
+              <div class="field"><label>Severidade</label>
+                <select id="r-sev"><option value="alta">alta</option><option value="média" selected>média</option><option value="baixa">baixa</option></select>
+              </div>
+              <button class="btn-form" id="btn-add-regra">Salvar regra</button>
+              <button class="link-inline hidden" id="btn-cancelar-edicao">cancelar edição</button>
+              <p class="msg" id="regra-msg"></p>
+            </div>
+            <div class="card side-card curador-only">
+              <div class="card-title">📃 Contrato padrão (golden)</div>
+              <div class="field"><textarea id="cp-texto" rows="4" placeholder="Cole o texto do contrato padrão…"></textarea></div>
+              <button class="btn-form" id="btn-cp">Definir contrato padrão</button>
+              <p class="msg" id="cp-msg"></p>
+            </div>
+            <div class="card side-card readonly-note hidden">
+              <p class="badge-readonly">Somente curadores podem editar a base de conhecimento.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PAGE: CONFIG -->
+      <div id="page-config" class="hidden">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Configurações</div>
+            <div class="page-subtitle">Sua conta</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="field"><label>E-mail</label><input id="cfg-email" disabled /></div>
+          <div class="field"><label>Papel</label><input id="cfg-papel" disabled /></div>
+          <button class="btn-form" id="btn-logout2">Sair da conta</button>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script>
+    window.SUPABASE_URL = "{{ supabase_url }}";
+    window.SUPABASE_ANON_KEY = "{{ supabase_anon_key }}";
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/static/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+# Orquestração para desenvolvimento/local e referência de implantação.
+# Em produção no ME, as variáveis vêm do ambiente seguro (não de um .env no disco).
+services:
+  app:
+    build: .
+    image: analisador-contratos:latest
+    ports:
+      - "8000:8000"
+    # Carrega as variáveis do .env local (DATABASE_URL, LLM, SUPABASE_*, CURADOR_EMAILS).
+    env_file:
+      - .env
+    volumes:
+      # Persistência de uploads e relatórios gerados (em produção, usar storage gerenciado).
+      - ./data:/app/data
+      - ./relatorios:/app/relatorios
+    restart: unless-stopped

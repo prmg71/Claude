@@ -1,0 +1,21 @@
+# Ambiente e segredos — nunca vão para a imagem
+venv/
+.env
+.env.*
+!.env.example
+
+# Dados locais (a Base de Conhecimento fica no Supabase; uploads/relatórios são volumes)
+data/
+relatorios/*.docx
+contratos/*
+!contratos/.gitkeep
+
+# Desenvolvimento / VCS
+.git/
+.gitignore
+.claude/
+__pycache__/
+**/__pycache__/
+*.pyc
+*.md
+!README.md

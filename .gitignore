@@ -1,0 +1,19 @@
+venv/
+.env
+__pycache__/
+*.pyc
+
+# Saídas e entradas locais (manter as pastas, ignorar conteúdo)
+relatorios/*.docx
+contratos/*
+referencias/*
+!contratos/.gitkeep
+!referencias/.gitkeep
+!relatorios/.gitkeep
+
+# Dados da aplicação (Base de Conhecimento em JSON; será migrada para BD)
+data/knowledge/*.json
+!data/knowledge/.gitkeep
+
+# Uploads de contratos (dados locais)
+data/uploads/
