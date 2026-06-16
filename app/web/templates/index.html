@@ -8,12 +8,12 @@
 </head>
 <body>
 
-  <!-- ── APP ── -->
   <div id="app-shell">
     <nav class="sidebar">
       <div class="sidebar-logo">
-        <div class="logo-eyebrow">Wort</div>
-        <div class="logo-name">Analisador de<br>Contratos</div>
+        <div class="logo-wort">Wort</div>
+        <div class="logo-consultoria">Consultoria</div>
+        <div class="logo-app-name">Analisador de Contratos</div>
       </div>
       <div class="nav-section">
         <div class="nav-group-label">Menu</div>
@@ -94,7 +94,6 @@
               <button class="btn-analyze" id="analyzeBtn" disabled>🔍 Analisar contrato</button>
             </div>
 
-            <!-- RESULT -->
             <div class="result-panel" id="resultPanel">
               <div class="result-header">
                 <div class="result-title" id="resultTitle">Análise</div>
@@ -144,15 +143,14 @@
         <div class="card"><div class="reports-list" id="all-list"></div></div>
       </div>
 
-      <!-- PAGE: APRENDIZADOS (Base de Conhecimento) -->
+      <!-- PAGE: APRENDIZADOS -->
       <div id="page-aprendizados" class="hidden">
         <div class="page-header">
           <div>
             <div class="page-title">Aprendizados</div>
-            <div class="page-subtitle">Base de conhecimento que refina as análises (cláusulas-padrão, limites, flexibilidades)</div>
+            <div class="page-subtitle">Base de conhecimento que refina as análises</div>
           </div>
         </div>
-
         <div class="form-grid">
           <div class="card">
             <div class="field">
@@ -162,7 +160,6 @@
             <p class="msg" id="apr-info"></p>
             <div id="regras-list"></div>
           </div>
-
           <div>
             <div class="card side-card curador-only">
               <div class="card-title" id="regra-form-title">➕ Adicionar regra</div>
