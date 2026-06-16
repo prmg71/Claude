@@ -104,5 +104,17 @@ def obter_tipo(tipo_id: str) -> Optional[TipoContrato]:
     return TIPOS.get(tipo_id)
 
 
-# alias para compatibilidade com código existente
+def listar_para_ui() -> list[dict]:
+    return [
+        {
+            "id": t.id,
+            "nome": t.nome,
+            "descricao": t.descricao,
+            "ativo": t.ativo,
+        }
+        for t in TIPOS.values()
+    ]
+
+
+# aliases para compatibilidade com código existente
 get_tipo = obter_tipo
