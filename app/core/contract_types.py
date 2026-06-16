@@ -15,16 +15,15 @@ from dataclasses import dataclass, field
 
 @dataclass(frozen=True)
 class TipoContrato:
-    id: str                       # identificador estável (usado na API/UI)
-    nome: str                     # rótulo exibido na interface web
+    id: str
+    nome: str
     descricao: str
-    pasta_referencias: str        # subpasta em referencias/
-    instrucoes: str               # orientações específicas para o LLM
-    checklist: list[str] = field(default_factory=list)  # pontos a avaliar (semente)
+    pasta_referencias: str
+    instrucoes: str
+    checklist: list[str] = field(default_factory=list)
     ativo: bool = False
 
 
-# --- Tipo 1: Contrato Mensalidade SaaS (ÚNICO ativo nesta fase) ---
 _SAAS = TipoContrato(
     id="saas_mensalidade",
     nome="Contrato Mensalidade SaaS",
@@ -33,18 +32,18 @@ _SAAS = TipoContrato(
     ativo=True,
     instrucoes=(
         "Este é um contrato de SaaS (software como serviço) com cobrança mensal "
-        "recorrente. Neste tipo de contrato, o MERCADO ELETRÔNICO (ME) é SEMPRE o "
+        "recorrente. Neste tipo de contrato, a Wort é SEMPRE o "
         "FORNECEDOR/PRESTADOR do serviço (a outra parte é o cliente/contratante). "
-        "Analise SOB A ÓTICA DO ME COMO FORNECEDOR, destacando cláusulas que "
-        "exponham o ME a risco enquanto prestador — por exemplo: responsabilidade "
-        "ilimitada ou desproporcional do ME, penalidades/SLA excessivos impostos ao "
-        "ME, cessão indevida da propriedade intelectual do software do ME, "
+        "Analise SOB A ÓTICA DA WORT COMO FORNECEDOR, destacando cláusulas que "
+        "exponham a Wort a risco enquanto prestadora — por exemplo: responsabilidade "
+        "ilimitada ou desproporcional da Wort, penalidades/SLA excessivos impostos à "
+        "Wort, cessão indevida da propriedade intelectual do software da Wort, "
         "obrigações vagas que ampliem o escopo sem contrapartida, ou condições de "
-        "pagamento/reajuste desfavoráveis ao ME. "
+        "pagamento/reajuste desfavoráveis à Wort. "
         "Avalie a presença e a adequação de cada item do checklist abaixo; para "
         "cada item, registre na seção 'comparacao' o que se espera (referencia) e "
         "o que o contrato estabelece (contrato), marcando 'conforme' como false "
-        "quando o item estiver ausente, vago ou desfavorável ao ME."
+        "quando o item estiver ausente, vago ou desfavorável à Wort."
     ),
     checklist=[
         "Objeto e escopo do serviço SaaS (módulos, usuários, limites de uso)",
@@ -63,7 +62,6 @@ _SAAS = TipoContrato(
     ],
 )
 
-# --- Demais tipos: previstos, ainda inativos (aparecem na UI como "em breve") ---
 _MARKETPLACE = TipoContrato(
     id="marketplace_privado",
     nome="Contrato Marketplace Privado",
@@ -72,28 +70,28 @@ _MARKETPLACE = TipoContrato(
     ativo=True,
     instrucoes=(
         "Este é um contrato de prestação de serviços de sistema de compras / "
-        "marketplace privado, com intermediação. Neste tipo, o MERCADO ELETRÔNICO "
-        "(ME) é SEMPRE o FORNECEDOR/OPERADOR da plataforma (a outra parte é o "
-        "cliente/contratante). Analise SOB A ÓTICA DO ME COMO FORNECEDOR, "
-        "comparando o contrato do cliente com o contrato padrão do ME e destacando "
-        "cláusulas que exponham o ME a risco enquanto operador — por exemplo: "
-        "responsabilidade ilimitada ou desproporcional do ME, garantias/níveis de "
+        "marketplace privado, com intermediação. Neste tipo, a Wort é SEMPRE o "
+        "FORNECEDOR/OPERADOR da plataforma (a outra parte é o cliente/contratante). "
+        "Analise SOB A ÓTICA DA WORT COMO FORNECEDOR, "
+        "comparando o contrato do cliente com o contrato padrão da Wort e destacando "
+        "cláusulas que exponham a Wort a risco enquanto operadora — por exemplo: "
+        "responsabilidade ilimitada ou desproporcional da Wort, garantias/níveis de "
         "serviço excessivos, cessão indevida da propriedade intelectual dos sistemas "
-        "do ME, obrigações vagas que ampliem o escopo sem contrapartida, condições "
-        "comerciais/intermediação/reajuste desfavoráveis ao ME, ou riscos de LGPD e "
+        "da Wort, obrigações vagas que ampliem o escopo sem contrapartida, condições "
+        "comerciais/intermediação/reajuste desfavoráveis à Wort, ou riscos de LGPD e "
         "anticorrupção. Avalie cada item do checklist; marque 'conforme' como false "
-        "quando o contrato do cliente divergir do padrão do ME de forma desfavorável "
-        "ou quando um ponto estiver ausente, vago ou arriscado para o ME."
+        "quando o contrato do cliente divergir do padrão da Wort de forma desfavorável "
+        "ou quando um ponto estiver ausente, vago ou arriscado para a Wort."
     ),
     checklist=[
         "Objeto e escopo dos serviços (Anexos I/II/III)",
         "Condições comerciais: valores, intermediação/comissão e forma de pagamento",
         "Reajuste de preços (índice e periodicidade)",
         "Reembolso de despesas",
-        "Obrigações do ME (níveis de serviço, prazos)",
+        "Obrigações da Wort (níveis de serviço, prazos)",
         "Obrigações do cliente (pagamento e uso adequado)",
-        "Responsabilidades e garantias (limitação de responsabilidade do ME)",
-        "Propriedade intelectual (titularidade dos sistemas do ME)",
+        "Responsabilidades e garantias (limitação de responsabilidade da Wort)",
+        "Propriedade intelectual (titularidade dos sistemas da Wort)",
         "Isenção de vínculo trabalhista",
         "Sigilo e confidencialidade",
         "Declarações e garantias anticorrupção",
@@ -125,7 +123,6 @@ _NDA = TipoContrato(
     instrucoes="",
 )
 
-# Ordem é a ordem de exibição na interface web.
 TIPOS: dict[str, TipoContrato] = {
     t.id: t
     for t in (_SAAS, _MARKETPLACE, _COMPRAS_FREE, _FORNECEDORES, _NDA)
@@ -143,7 +140,6 @@ def tipos_ativos() -> list[TipoContrato]:
 
 
 def listar_para_ui() -> list[dict]:
-    """Lista usada pela interface web (inclui inativos como 'em breve')."""
     return [
         {"id": t.id, "nome": t.nome, "descricao": t.descricao, "ativo": t.ativo}
         for t in TIPOS.values()

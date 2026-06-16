@@ -1,10 +1,8 @@
 "use strict";
 
-const sb = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
-
-let TOKEN = null;
-let USUARIO = null;       // { email, papel }
-let TIPOS = [];           // cache dos tipos
+let TOKEN = "dev-token";
+let USUARIO = { email: "dev@local", papel: "curador" };
+let TIPOS = [];
 let SELECTED_TIPO = null;
 let CURRENT_FILE = null;
 let CURRENT_ANALYSIS = null;
@@ -18,7 +16,7 @@ const $ = (s) => document.querySelector(s);
 const show = (el) => el && el.classList.remove("hidden");
 const hide = (el) => el && el.classList.add("hidden");
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-const sevClass = (s) => (s === "média" ? "media" : s);  // 'média' -> classe css 'media'
+const sevClass = (s) => (s === "média" ? "media" : s);
 function fmtTempo(seg) {
   if (seg < 60) return seg.toFixed(1).replace(".", ",") + " s";
   const m = Math.floor(seg / 60), s = Math.round(seg % 60);
@@ -41,31 +39,6 @@ const apiJSON = async (p, o) => (await api(p, o)).json();
 const jsonBody = (obj) => ({ method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(obj) });
 const linhas = (ta) => ta.value.split("\n").map((s) => s.trim()).filter(Boolean);
 const tipoNome = (id) => (TIPOS.find((t) => t.id === id) || {}).nome || id;
-
-// ── SESSÃO ──
-async function aplicarSessao(session) {
-  if (!session) { TOKEN = null; show($("#view-login")); hide($("#app-shell")); return; }
-  TOKEN = session.access_token;
-  USUARIO = { email: session.user.email, papel: "usuario" };
-  try { USUARIO = await apiJSON("/me"); } catch (_) {}
-  hide($("#view-login"));
-  $("#app-shell").classList.remove("hidden");
-
-  const nome = USUARIO.email.split("@")[0].replace(/[._]/g, " ");
-  $("#user-name").textContent = nome;
-  $("#user-role").textContent = USUARIO.papel;
-  $("#user-avatar").textContent = nome.slice(0, 2).toUpperCase();
-  $("#cfg-email").value = USUARIO.email;
-  $("#cfg-papel").value = USUARIO.papel;
-
-  // controles de curadoria
-  const curador = USUARIO.papel === "curador";
-  document.querySelectorAll(".curador-only").forEach((el) => el.classList.toggle("hidden", !curador));
-  $(".readonly-note").classList.toggle("hidden", curador);
-
-  await carregarTipos();
-  navegar("nova");
-}
 
 // ── NAVEGAÇÃO ──
 const PAGES = ["nova", "relatorios", "aprendizados", "config"];
@@ -100,7 +73,6 @@ async function selecionarTipo(id, el) {
   SELECTED_TIPO = id;
   document.querySelectorAll("#type-grid .type-option").forEach((e) => e.classList.remove("selected"));
   if (el) el.classList.add("selected");
-  // popula os checklists laterais a partir da base de conhecimento
   try {
     const base = await apiJSON("/tipos/" + id + "/conhecimento");
     const ativas = base.regras.filter((r) => r.ativo);
@@ -156,7 +128,7 @@ async function analisar() {
   const id = criada.id;
   const labels = [
     "Extraindo texto do contrato…", "Carregando a base de conhecimento…",
-    "Comparando com o padrão ME…", "Identificando riscos e severidades…", "Gerando relatório…",
+    "Comparando com o padrão Wort…", "Identificando riscos e severidades…", "Gerando relatório…",
   ];
   let i = 0, pct = 12;
   while (true) {
@@ -195,7 +167,6 @@ function renderResultado(a) {
   $("#cnt-media").textContent = cont("média");
   $("#cnt-baixa").textContent = cont("baixa");
 
-  // métricas: tokens, custo US$, tempo
   const metrics = [];
   if (a.duracao_seg != null) metrics.push(`<span class="metric">⏱ <b>${fmtTempo(a.duracao_seg)}</b> de análise</span>`);
   if (a.tokens_total != null) metrics.push(`<span class="metric">🔢 <b>${a.tokens_total.toLocaleString("pt-BR")}</b> tokens</span>`);
@@ -213,7 +184,7 @@ function renderResultado(a) {
     if (!itens.length) return;
     html += `<div class="result-section"><div class="result-section-title ${sevClass(sev)}">${titulo}</div>` +
       itens.map((x) =>
-        `<div class="result-item ${sevClass(sev)}">` +
+        `<div class="result-item ${sevClass(x.severidade)}">` +
         (x.clausula ? `<div class="result-item-clause">${x.clausula}</div>` : "") +
         `<div class="result-item-desc">${x.descricao}</div>` +
         (x.recomendacao ? `<div class="result-item-body"><b>Recomendação:</b> ${x.recomendacao}</div>` : "") +
@@ -228,7 +199,6 @@ function renderResultado(a) {
 
 function nomeDoCabecalho(resp, fallback) {
   const cd = resp.headers.get("content-disposition") || "";
-  // tenta filename*=UTF-8''... (RFC 5987) e depois filename="..."
   let m = cd.match(/filename\*=UTF-8''([^;]+)/i);
   if (m) return decodeURIComponent(m[1]);
   m = cd.match(/filename="?([^";]+)"?/i);
@@ -237,7 +207,7 @@ function nomeDoCabecalho(resp, fallback) {
 
 async function baixar(id) {
   const resp = await api("/analises/" + id + "/relatorio");
-  const nome = nomeDoCabecalho(resp, "Relatório.docx");
+  const nome = nomeDoCabecalho(resp, "Relatorio.docx");
   const blob = await resp.blob();
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a"); a.href = url; a.download = nome; a.click();
@@ -279,7 +249,6 @@ function linhaRelatorio(a) {
 async function atualizarStatsERecentes() {
   let lista = [];
   try { lista = await apiJSON("/analises"); } catch (_) { return; }
-  // stats
   $("#stat-total").textContent = lista.length;
   const altos = lista.reduce((s, a) => s + (((a.resultado || {}).riscos || []).filter((x) => x.severidade === "alta").length), 0);
   $("#stat-criticos").textContent = altos;
@@ -290,10 +259,8 @@ async function atualizarStatsERecentes() {
       $("#stat-aprendizados").textContent = base.regras.filter((r) => r.ativo).length;
     }
   } catch (_) {}
-  // badge
   const badge = $("#badge-relatorios");
   if (lista.length) { badge.textContent = lista.length; show(badge); } else hide(badge);
-  // recentes (top 4)
   const rec = $("#recent-list"); rec.innerHTML = "";
   if (!lista.length) { rec.innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div><p>Nenhuma análise ainda.</p></div>`; return; }
   lista.slice(0, 4).forEach((a) => rec.appendChild(linhaRelatorio(a)));
@@ -307,7 +274,7 @@ async function listarTodas() {
   lista.forEach((a) => cont.appendChild(linhaRelatorio(a)));
 }
 
-// ── APRENDIZADOS (Base de Conhecimento) ──
+// ── APRENDIZADOS ──
 async function carregarTiposApr() {
   const sel = $("#apr-tipo");
   if (!sel.options.length) {
@@ -317,8 +284,8 @@ async function carregarTiposApr() {
   }
   if (sel.value) carregarBase();
 }
-let BASE_REGRAS = [];      // regras ativas carregadas (para edição)
-let EDITANDO_ID = null;    // id da regra em edição (null = nova)
+let BASE_REGRAS = [];
+let EDITANDO_ID = null;
 
 async function carregarBase() {
   const tipo = $("#apr-tipo").value;
@@ -328,7 +295,6 @@ async function carregarBase() {
   BASE_REGRAS = ativas;
   $("#apr-info").textContent = `${ativas.length} regra(s) ativa(s) · versão ${base.versao}` + (base.contrato_padrao ? " · contrato padrão definido" : "");
   const cont = $("#regras-list"); cont.innerHTML = "";
-  const curador = USUARIO.papel === "curador";
   ativas.forEach((r) => {
     const row = document.createElement("div");
     row.className = "rule-row";
@@ -336,8 +302,8 @@ async function carregarBase() {
       `<div class="rule-topico">${r.topico}</div>` +
       `<span class="sev-pill ${sevClass(r.severidade)}">${r.severidade}</span>` +
       `<span class="origem-pill">${r.origem}</span>` +
-      (curador ? `<span class="report-link" data-edit="${r.id}">editar</span>` +
-                 `<span class="report-link" data-off="${r.id}">remover</span>` : "");
+      `<span class="report-link" data-edit="${r.id}">editar</span>` +
+      `<span class="report-link" data-off="${r.id}">remover</span>`;
     const ed = row.querySelector("[data-edit]");
     if (ed) ed.addEventListener("click", () => iniciarEdicao(ed.dataset.edit));
     const off = row.querySelector("[data-off]");
@@ -382,7 +348,7 @@ async function salvarRegra() {
     correcoes: linhas($("#r-correcoes")), severidade: $("#r-sev").value,
   };
   const editando = !!EDITANDO_ID;
-  if (editando) corpo.id = EDITANDO_ID;  // envia o id -> backend atualiza (versiona)
+  if (editando) corpo.id = EDITANDO_ID;
   if (!corpo.topico) { $("#regra-msg").textContent = "Informe o tópico."; return; }
   try {
     await apiJSON("/tipos/" + tipo + "/conhecimento/regras", jsonBody(corpo));
@@ -406,17 +372,6 @@ async function definirContratoPadrao() {
 }
 
 // ── EVENTOS ──
-$("#btn-login").addEventListener("click", async () => {
-  $("#login-error").textContent = "";
-  const { error } = await sb.auth.signInWithPassword({
-    email: $("#login-email").value.trim(), password: $("#login-password").value,
-  });
-  if (error) $("#login-error").textContent = error.message;
-});
-$("#login-password").addEventListener("keydown", (e) => { if (e.key === "Enter") $("#btn-login").click(); });
-$("#btn-logout").addEventListener("click", () => sb.auth.signOut());
-$("#btn-logout2").addEventListener("click", () => sb.auth.signOut());
-
 document.querySelectorAll("[data-page]").forEach((el) => el.addEventListener("click", () => navegar(el.dataset.page)));
 
 $("#uploadZone").addEventListener("click", () => $("#fileInput").click());
@@ -436,6 +391,10 @@ $("#btn-add-regra").addEventListener("click", salvarRegra);
 $("#btn-cancelar-edicao").addEventListener("click", cancelarEdicao);
 $("#btn-cp").addEventListener("click", definirContratoPadrao);
 
-// ── INÍCIO ──
-sb.auth.onAuthStateChange((_e, session) => aplicarSessao(session));
-sb.auth.getSession().then(({ data }) => aplicarSessao(data.session));
+// ── INÍCIO (modo dev: entra direto sem login) ──
+$("#user-name").textContent = "dev local";
+$("#user-role").textContent = "curador";
+$("#user-avatar").textContent = "DV";
+$("#cfg-email").value = "dev@local";
+$("#cfg-papel").value = "curador";
+carregarTipos().then(() => navegar("nova"));
